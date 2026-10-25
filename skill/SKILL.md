@@ -1,6 +1,6 @@
 ---
 name: deepseek-delegate
-description: 让 Claude（主控）亲自调度接在终端 claude 上的 DeepSeek（执行模型）干活：写指令文件 → 用 ds-run.sh 无人值守启动 DeepSeek → 读回报 → git diff 抽查 → 归档。用户说"让 DeepSeek 去做 / 交给 DeepSeek / 用执行模型跑 / 按 AI 协作工作流推进"，或任务是大量体力活（跑脚本、批量改文件、盘点、训练队列）而主控只需审核时使用。
+description: 让 Claude（主控）亲自调度接在终端 claude 上的 DeepSeek（执行模型）干活：写指令文件 → 用 ds-run.sh 无人值守启动 DeepSeek → 读回报 → git diff 抽查 → 归档。用户说"让 DeepSeek 去做 / 交给 DeepSeek / 用执行模型跑 / 按 AI 协作工作流推进"，或任务含有体力活（跑脚本、批量改文件、盘点、训练队列、写代码、git 操作）时**主动使用**：能交给 DeepSeek 的尽量交给它，主控只写指令和审核，以节省 Claude 额度。
 ---
 
 # DeepSeek 委派（主控调度执行模型）
@@ -8,6 +8,19 @@ description: 让 Claude（主控）亲自调度接在终端 claude 上的 DeepSe
 前提：用户的终端 `claude` 已在 `~/.claude/settings.json` 的 `env` 里配置为 DeepSeek（`ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic` 加上 `ANTHROPIC_AUTH_TOKEN` 和模型名）。
 主控（你）不需要用户传话：直接用 `ds-run.sh` 以 headless 模式（`claude -p`）启动 DeepSeek，结果以 JSON 返回给你。
 分工规则见本 skill 的 `references/AI协作工作流.md`：主控写指令、审核、把关；DeepSeek 照做并如实回报；用户只做授权决定。
+
+## 默认原则：能交给 DeepSeek 的，就交给 DeepSeek
+
+Claude 额度贵，DeepSeek 便宜，跑错了多跑几次也无所谓。所以**默认把活委派出去，主控尽量少动手**：
+
+- **交给 DeepSeek**：跑脚本、训练、评估；批量改文件、写新代码；盘点和统计；生成图表；整理文档；git 的 add / commit / push（推送需要用户授权）；以及任何"照着说明做就行"的事。需要大段读文件才能弄清的情况，也让 DeepSeek 先读，把摘要写进回报。
+- **主控自己做的只有**：理解目标、拆解任务、写指令、审核回报、做判断，以及审核所需的**少量**只读抽查（看几行 diff、核对几个关键数字）。
+- **省主控额度的做法**：
+  - 一轮指令里尽量多安排工作，用"失败就停"的检查点控制风险，减少来回；
+  - 审核时只抽查最关键的几项，不要把整份输出读进上下文；
+  - 返工也写成指令交给 DeepSeek，不要自己修；
+  - DeepSeek 失败了，先判断是指令写得不清楚还是环境问题，改指令或修环境后让它重跑。
+- **只有这些情况才由主控亲自动手**：DeepSeek 连续失败、并且确认是它能力不够的；需要只有主控才有的工具的；或者一两条命令就能做完，写指令反而更费事的。动手前用一句话告诉用户原因。
 
 ## 一次性准备（新电脑或首次使用时检查）
 
