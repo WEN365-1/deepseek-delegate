@@ -1,0 +1,4 @@
+*.bak_*
+.DS_Store
+settings.json
+.env
