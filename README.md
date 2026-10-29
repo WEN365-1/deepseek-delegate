@@ -59,6 +59,43 @@ Windows 上用 Git Bash 运行。
 
 在 Claude Code 里说"这个交给 DeepSeek 做"或"按 AI 协作工作流推进"，Claude 就会按 skill 的流程走。第一次在某个项目里用时，Claude 会先建交接目录 `_claude/`，并建议先用 git 打一个快照。
 
+## Kimi Work 版
+
+仓库的 [`kimi/`](kimi/) 是同一委派工作流的 Kimi Work 适配版。它不依赖 Claude CLI 或 PowerShell 7，只用 Python 标准库直接调用 DeepSeek API，并保留“指令 → 执行 → 回报 → 独立抽查 → 归档”的流程。
+
+### 1. 安装到 Kimi 项目
+
+在项目根目录执行（Windows 可用 Git Bash）：
+
+```bash
+mkdir -p .agents/skills
+cp -R /path/to/deepseek-delegate/kimi .agents/skills/deepseek-delegate
+```
+
+把 `/path/to/deepseek-delegate` 换成本仓库的实际路径。Kimi Work 会发现项目级 `deepseek-delegate` 技能。
+
+### 2. 配置并使用
+
+在自己的终端私密配置 `DEEPSEEK_API_KEY`，不要把密钥写进聊天、指令、回报或仓库。可选环境变量：
+
+- `DEEPSEEK_MODEL`：默认 `deepseek-flash`；
+- `DEEPSEEK_BASE_URL`：默认 `https://api.deepseek.com`。
+
+然后在 Kimi Work 中说“让 DeepSeek 去做”“交给 DeepSeek”或“按 AI 协作工作流推进”。交接文件保存在项目的 `_kimi/deepseek/`。
+
+也可以直接运行启动器：
+
+```bash
+python .agents/skills/deepseek-delegate/scripts/ds_run.py \
+  --project "/absolute/project/path" \
+  --instruction "_kimi/deepseek/Kimi指令_YYYY.MM.DD.HH.MM.md" \
+  --report "_kimi/deepseek/DeepSeek回报_YYYY.MM.DD.HH.MM.md" \
+  --json-output "_kimi/deepseek/DeepSeek运行_YYYY.MM.DD.HH.MM.json" \
+  --timeout 240
+```
+
+默认只读且限制在项目目录内；`--write` 允许新建文件，`--allow-overwrite` 允许覆盖已有文件，`--allow-python` 允许运行项目内 Python 脚本。开放 Python 不是安全沙箱，只运行已经审查的脚本。完整规则见 [`kimi/SKILL.md`](kimi/SKILL.md)。
+
 ## 安全须知（请读）
 
 - `ds-run.sh` 以 `dontAsk` 模式运行 DeepSeek：白名单之外的命令一律拒绝，不会弹窗询问。
